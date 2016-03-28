@@ -6,6 +6,7 @@ import time
 
 from . import daq
 from . import serializer
+from . import grapher
 
 log = logging.getLogger(__name__)
 
@@ -22,8 +23,11 @@ def main(options):
                        die_event=die_event)
     sert = serializer.MockSerializer(output_queue=serial_queue,
                                      die_event=die_event)
+    grat = grapher.MockGrapher(output_queue=vis_queue,
+                               die_event=die_event)
     daqt.start()
     sert.start()
+    grat.start()
     try:
         while True:
             try:
@@ -31,6 +35,7 @@ def main(options):
             except queue.Empty:
                 continue
             serial_queue.put(v)
+            vis_queue.put(v)
     except KeyboardInterrupt:
         die_event.set()
         for t in [daqt, sert]:
