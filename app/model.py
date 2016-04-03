@@ -92,16 +92,30 @@ def get_session(fp):
 
 
 @contextlib.contextmanager
-def session_scope(fp, commit=False):
+def session_scope(fp, commit=False, lock=None):
     """Provide a transactional scope around a series of operations."""
-    session = get_session(fp)
-    try:
-        yield session
-        if commit:
-            session.commit()
-    except exc.SQLAlchemyError:
-        log.exception('Failurre during session - rolling back any changes.')
-        session.rollback()
-        raise
-    finally:
-        session.close()
+    if lock:
+        with lock:
+            session = get_session(fp)
+            try:
+                yield session
+                if commit:
+                    session.commit()
+            except exc.SQLAlchemyError:
+                log.exception('Failurre during session - rolling back any changes.')
+                session.rollback()
+                raise
+            finally:
+                session.close()
+    else:
+        session = get_session(fp)
+        try:
+            yield session
+            if commit:
+                session.commit()
+        except exc.SQLAlchemyError:
+            log.exception('Failurre during session - rolling back any changes.')
+            session.rollback()
+            raise
+        finally:
+            session.close()
