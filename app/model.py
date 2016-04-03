@@ -41,22 +41,28 @@ class State(Base):
         self._value = json.dumps(value)
 
 
-class LogData(Base):
-    __tablename__ = 'logdata'
-    data = Column(String)
-    timestamp = Column(DateTime, default=utils.now())
-    session_id = Column(Integer, ForeignKey('logsession.id'))
-    session = relationship(LogSesssion)
-
-
 class LogSesssion(Base):
     __tablename__ = 'logsession'
     id = Column(Integer, primary_key=True, autoincrement=True)
-    collection_start = Column(DateTime, default=utils.now())
-    collection_stop = Column(DateTime, default=None)
-    collection_name = Column(String, default='Collection')
-    collection_notes = Column(String, default=None)
-    collector = Column(String, default=None)
+    start = Column(DateTime)
+    stop = Column(DateTime)
+    name = Column(String, default='Collection')
+    notes = Column(String, default=None)
+    user = Column(String, default=None)
+    def __init__(self, name, notes=None, user=None):
+        self.start = utils.now()
+        self.name = name
+        self.notes = notes
+        self.user = user
+
+
+class LogData(Base):
+    __tablename__ = 'logdata'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    data = Column(String)
+    timestamp = Column(DateTime, default=None)
+    session_id = Column(Integer, ForeignKey('logsession.id'), index=True)
+    session = relationship(LogSesssion)
 
 
 def get_engine(fp):
