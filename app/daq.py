@@ -28,6 +28,7 @@ class MockDAQ(threading.Thread):
             v = random.random()
             log.debug('Emitting {}'.format(v))
             self.queue.put(v)
+            time.sleep(0.3)
             # In reality we would do non-blocking reads for line oriented data
         log.info('[{}] is exiting'.format(self.name))
 
