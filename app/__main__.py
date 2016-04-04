@@ -33,8 +33,11 @@ def main(options):
                                    serial_lock=serial_lock,
                                    db_fp=options.db,
                                    logsession=ls)
-    grat = grapher.MockGrapher(output_queue=vis_queue,
-                               die_event=die_event)
+    # grat = grapher.MockGrapher(output_queue=vis_queue,
+    #                            die_event=die_event)
+    grat = grapher.VisGrapher(output_queue=vis_queue,
+                              die_event=die_event,
+                              array_size=100)
     daqt.start()
     sert.start()
     grat.start()
