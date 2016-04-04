@@ -41,7 +41,7 @@ class State(Base):
         self._value = json.dumps(value)
 
 
-class LogSesssion(Base):
+class LogSession(Base):
     __tablename__ = 'logsession'
     id = Column(Integer, primary_key=True, autoincrement=True)
     start = Column(DateTime)
@@ -62,7 +62,7 @@ class LogData(Base):
     data = Column(String)
     timestamp = Column(DateTime, default=None)
     session_id = Column(Integer, ForeignKey('logsession.id'), index=True)
-    session = relationship(LogSesssion)
+    session = relationship(LogSession)
 
 
 def get_engine(fp):

@@ -3,7 +3,7 @@ import threading
 import multiprocessing
 import queue
 
-from .model import session_scope, make_db, LogSesssion, LogData
+from .model import session_scope, make_db, LogSession, LogData
 from . import utils
 
 log = logging.getLogger(__name__)
@@ -43,7 +43,7 @@ class DBSerializer(threading.Thread):
                  die_event: multiprocessing.Event,
                  serial_lock: multiprocessing.Lock,
                  db_fp: str,
-                 logsession: LogSesssion,
+                 logsession: LogSession,
                  **kwargs):
         super().__init__()
         self.queue = output_queue
@@ -79,7 +79,7 @@ class DBSerializer(threading.Thread):
 
         log.info('Closing session: {}'.format(self.session_id))
         with session_scope(self.db, commit=True, lock=self.lock) as s:
-            ls = s.query(LogSesssion).filter_by(id=self.session_id).one()
+            ls = s.query(LogSession).filter_by(id=self.session_id).one()
             ls.stop = utils.now()
             s.add(ls)
         log.info('[{}] is exiting'.format(self.name))

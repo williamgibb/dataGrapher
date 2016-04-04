@@ -22,9 +22,9 @@ def main(options):
     serial_queue = multiprocessing.Queue()
     vis_queue = multiprocessing.Queue()
     serial_lock = multiprocessing.Lock()
-    ls = model.LogSesssion(name=options.name,
-                           notes=options.notes,
-                           user=options.user)
+    ls = model.LogSession(name=options.name,
+                          notes=options.notes,
+                          user=options.user)
 
     daqt = daq.MockSawtoothDAQ(serial_port_settings={},
                                output_queue=daq_queue,
