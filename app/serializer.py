@@ -2,15 +2,15 @@ import logging
 import threading
 import multiprocessing
 import queue
-import random
-import time
 
 from .model import session_scope, make_db, LogSesssion, LogData
 from . import utils
 
 log = logging.getLogger(__name__)
 
+
 class MockSerializer(threading.Thread):
+    # noinspection PyUnusedLocal
     def __init__(self,
                  output_queue: multiprocessing.Queue,
                  die_event: multiprocessing.Event,
@@ -30,7 +30,6 @@ class MockSerializer(threading.Thread):
             try:
                 v = self.queue.get(timeout=1)
             except queue.Empty:
-                #log.warning('Empty Queue encountered?')
                 continue
             with self.lock:
                 log.info("Read: {}".format(v))
@@ -38,6 +37,7 @@ class MockSerializer(threading.Thread):
 
 
 class DBSerializer(threading.Thread):
+    # noinspection PyUnusedLocal
     def __init__(self,
                  output_queue: multiprocessing.Queue,
                  die_event: multiprocessing.Event,
@@ -82,5 +82,5 @@ class DBSerializer(threading.Thread):
             ls = s.query(LogSesssion).filter_by(id=self.session_id).one()
             ls.stop = utils.now()
             s.add(ls)
-
+        log.info('[{}] is exiting'.format(self.name))
         return

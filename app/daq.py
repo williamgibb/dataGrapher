@@ -8,6 +8,7 @@ import serial
 
 log = logging.getLogger(__name__)
 
+
 class MockDAQ(threading.Thread):
     def __init__(self,
                  serial_port_settings: dict,
@@ -24,7 +25,7 @@ class MockDAQ(threading.Thread):
         while True:
             if self.die_event.is_set():
                 break
-            v = random.random() * 10
+            v = random.random()
             log.debug('Emitting {}'.format(v))
             self.queue.put(v)
             # In reality we would do non-blocking reads for line oriented data
