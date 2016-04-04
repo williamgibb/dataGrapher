@@ -87,9 +87,13 @@ void main() {
 
 
 class Canvas(app.Canvas):
-    def __init__(self, output_queue, n):
+    def __init__(self,
+                 output_queue: multiprocessing.Queue,
+                 n: int,
+                 close_event: multiprocessing.Event):
         # Setup stuff
         self.queue = output_queue
+        self.close_event = close_event
         self.n = n
         self.nrows = 2
         self.ncols = 1
@@ -155,6 +159,10 @@ class Canvas(app.Canvas):
     def on_draw(self, event):
         gloo.clear()
         self.program.draw('line_strip')
+
+    def on_close(self, event):
+        log.debug('Close event found.')
+        self.close_event.set()
 
     def update_array(self, v):
         """

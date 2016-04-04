@@ -17,6 +17,7 @@ def main(options):
     if not options.verbose:
         logging.disable(logging.DEBUG)
     die_event = multiprocessing.Event()
+    close_event = multiprocessing.Event()
     daq_queue = multiprocessing.Queue()
     serial_queue = multiprocessing.Queue()
     vis_queue = multiprocessing.Queue()
@@ -37,7 +38,8 @@ def main(options):
     sert.name = 'SERT-Thread'
     # noinspection PyUnusedLocal
     c = grapher.Canvas(output_queue=vis_queue,
-                       n=100)
+                       n=100,
+                       close_event=close_event)
     daqt.start()
     sert.start()
     try:
@@ -52,8 +54,11 @@ def main(options):
                 serial_queue.put(v)
                 vis_queue.put(v)
             grapher.app.process_events()
+            if close_event.is_set():
+                break
     except KeyboardInterrupt:
         log.info('Caught KeyboardInterrupt')
+    finally:
         die_event.set()
         grapher.app.quit()
         for t in [daqt, sert]:
