@@ -71,6 +71,8 @@ class DBSerializer(threading.Thread):
             except queue.Empty:
                 continue
 
+            log.debug('{} got: {}'.format(self.name, v))
+
             with session_scope(self.db, commit=True, lock=self.lock) as s:
                 ld = LogData(data=v,
                              timestamp=utils.now(),
