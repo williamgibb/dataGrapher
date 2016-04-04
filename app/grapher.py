@@ -1,5 +1,4 @@
 import logging
-import threading
 import math
 import multiprocessing
 import queue
@@ -87,81 +86,43 @@ void main() {
 """
 
 
-class MockGrapher(threading.Thread):
-    def __init__(self,
-                 output_queue: multiprocessing.Queue,
-                 die_event: multiprocessing.Event,
-                 array_size=100,
-                 **kwargs
-                 ):
-        super().__init__()
-        self.queue = output_queue
-        self.die_event = die_event
-        self.array_size = array_size
-        self.input_data = np.array([0.0 for i in range(self.array_size)])
-        self.diff_data = np.array([0.0 for i in range(self.array_size)])
-        self.graph_data = np.stack((self.input_data, self.diff_data)).astype(np.float32)
-        self.data_lock = multiprocessing.Lock()
-
-    def run(self):
-        log.info('{} is running!'.format(self.name))
-        n = 0
-        while True:
-            if self.die_event.is_set():
-                break
-            try:
-                v = self.queue.get(timeout=1)
-            except queue.Empty:
-                continue
-            log.info("Graphing: {}".format(v))
-            self.update_array(v)
-            if n == self.array_size:
-                print(self.input_data)
-                print(self.diff_data)
-                n = 0
-            n += 1
-        log.info('[{}] is exiting'.format(self.name))
-
-    def update_array(self, v):
-        """
-        Append a value to the end of the numpy array and update
-        the difference array.
-
-        :param v:
-        :return:
-        """
-        k = 1
-        with self.data_lock:
-            self.input_data[:-k] = self.input_data[k:]
-            self.input_data[-k:] = v
-            self.diff_data = np.diff(self.input_data)
-            # lol its like leftpad
-            self.diff_data = np.insert(self.diff_data, 0, self.diff_data[0])
-            self.graph_data = np.stack((self.input_data, self.diff_data)).astype(np.float32)
-
-
 class Canvas(app.Canvas):
-    def __init__(self, data, index, nrows, ncols, color_map, n, lock):
-        self.data = data
+    def __init__(self, output_queue, n):
+        # Setup stuff
+        self.queue = output_queue
+        self.n = n
+        self.nrows = 2
+        self.ncols = 1
+        self.m = self.nrows * self.ncols
+        self.lock = multiprocessing.Lock()
+        self.input_data = np.array([1.0 for i in range(self.n)])
+        self.diff_data = np.array([1.0 for i in range(self.n)])
+        self.graph_data = np.stack((self.diff_data, self.input_data)).astype(np.float32)
+        self.index = np.c_[np.repeat(np.repeat(np.arange(self.ncols), self.nrows), self.n),
+                           np.repeat(np.tile(np.arange(self.nrows), self.ncols), self.n),
+                           np.tile(np.arange(self.n), self.m)].astype(np.float32)
+        # These colors should be fixed colors!
+        self.color = np.repeat(np.random.uniform(size=(self.m, 3), low=.5, high=.9),
+                               self.n,
+                               axis=0).astype(np.float32)
+        # Build the app.Canvas and  set variables
         app.Canvas.__init__(self, title='Use your wheel to zoom!',
                             keys='interactive')
         self.program = gloo.Program(VERT_SHADER, FRAG_SHADER)
-        self.program['a_position'] = self.data.reshape(-1, 1)
-        self.program['a_color'] = color_map
-        self.program['a_index'] = index
+        with self.lock:
+            self.program['a_position'] = self.graph_data.reshape(-1, 1)
+        self.program['a_color'] = self.color
+        self.program['a_index'] = self.index
         self.program['u_scale'] = (1., 1.)
-        self.program['u_size'] = (nrows, ncols)
+        self.program['u_size'] = (self.nrows, self.ncols)
         self.program['u_n'] = n
-        self.lock = lock
 
         gloo.set_viewport(0, 0, *self.physical_size)
 
-        # self._timer = app.Timer('auto', connect=self.on_timer, start=True)
-        self._timer = app.Timer(1.0, connect=self.on_timer, start=True)
+        self._timer = app.Timer(connect=self.on_timer, start=True)
 
         gloo.set_state(clear_color='black', blend=True,
                        blend_func=('src_alpha', 'one_minus_src_alpha'))
-
         self.show()
 
     def on_resize(self, event):
@@ -176,65 +137,24 @@ class Canvas(app.Canvas):
         self.update()
 
     def on_timer(self, event):
-        """Add some data at the end of each signal (real-time signals)."""
-        with self.lock:
-            self.program['a_position'].set_data(self.data.ravel().astype(np.float32))
+        """
+        Grab data from the queue and put them onto the end of the numpy arrays.
+        :param event:
+        :return:
+        """
+        while True:
+            try:
+                v = self.queue.get(block=False)
+            except queue.Empty:
+                break
+            self.update_array(v)
+            with self.lock:
+                self.program['a_position'].set_data(self.graph_data.ravel().astype(np.float32))
         self.update()
 
     def on_draw(self, event):
         gloo.clear()
         self.program.draw('line_strip')
-
-
-class VisGrapher(threading.Thread):
-    def __init__(self,
-                 output_queue: multiprocessing.Queue,
-                 die_event: multiprocessing.Event,
-                 array_size=100,
-                 **kwargs
-                 ):
-        super().__init__()
-        self.queue = output_queue
-        self.die_event = die_event
-        self.array_size = array_size
-        self.input_data = np.array([1.0 for i in range(self.array_size)])
-        self.diff_data = np.array([1.0 for i in range(self.array_size)])
-        self.graph_data = np.stack((self.input_data, self.diff_data)).astype(np.float32)
-        print(self.graph_data.shape)
-        self.data_lock = multiprocessing.Lock()
-        # Some of these values are hardcoded based on the assumption of a 1 column, 2 row graph
-        self.nrows = 2
-        self.ncols = 1
-        m = self.nrows * self.ncols
-        self.index = np.c_[np.repeat(np.repeat(np.arange(self.ncols), self.nrows), self.array_size),
-                           np.repeat(np.tile(np.arange(self.nrows), self.ncols), self.array_size),
-                           np.tile(np.arange(self.array_size), m)].astype(np.float32)
-        # These colors should be fixed colors!
-        self.color = np.repeat(np.random.uniform(size=(m, 3), low=.5, high=.9),
-                               self.array_size,
-                               axis=0).astype(np.float32)
-        self.c = Canvas(data=self.graph_data,
-                        index=self.index,
-                        nrows=self.nrows,
-                        ncols=self.ncols,
-                        color_map=self.color,
-                        n=self.array_size,
-                        lock=self.data_lock)
-
-    def run(self):
-        log.info('{} is running!'.format(self.name))
-        app.run()
-        while True:
-            if self.die_event.is_set():
-                break
-            try:
-                v = self.queue.get(timeout=1)
-            except queue.Empty:
-                continue
-            log.info("Graphing: {}".format(v))
-            self.update_array(v)
-        log.info('[{}] is exiting'.format(self.name))
-        app.quit()
 
     def update_array(self, v):
         """
@@ -245,10 +165,10 @@ class VisGrapher(threading.Thread):
         :return:
         """
         k = 1
-        with self.data_lock:
+        with self.lock:
             self.input_data[:-k] = self.input_data[k:]
             self.input_data[-k:] = v
             self.diff_data = np.diff(self.input_data)
             # lol its like leftpad
             self.diff_data = np.insert(self.diff_data, 0, self.diff_data[0])
-            self.graph_data = np.stack((self.input_data, self.diff_data)).astype(np.float32)
+            self.graph_data = np.stack((self.diff_data, self.input_data)).astype(np.float32)
