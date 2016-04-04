@@ -61,7 +61,7 @@ def main(options):
         grapher.app.create()
         while True:
             try:
-                v = daq_queue.get(block=False)
+                v = daq_queue.get(timeout=0.01)
             except queue.Empty:
                 v = None
             if v:
