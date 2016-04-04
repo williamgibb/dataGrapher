@@ -102,7 +102,7 @@ def session_scope(fp, commit=False, lock=None):
                 if commit:
                     session.commit()
             except exc.SQLAlchemyError:
-                log.exception('Failurre during session - rolling back any changes.')
+                log.exception('Failure during session - rolling back any changes.')
                 session.rollback()
                 raise
             finally:
@@ -114,7 +114,7 @@ def session_scope(fp, commit=False, lock=None):
             if commit:
                 session.commit()
         except exc.SQLAlchemyError:
-            log.exception('Failurre during session - rolling back any changes.')
+            log.exception('Failure during session - rolling back any changes.')
             session.rollback()
             raise
         finally:
