@@ -17,6 +17,9 @@ from . import utils
 
 log = logging.getLogger(__name__)
 
+RANDOM = 'random'
+SAWTOOTH = 'sawtooth'
+
 
 def main(options):
     if not options.verbose:
@@ -31,9 +34,16 @@ def main(options):
                           notes=options.notes,
                           user=options.user)
 
-    daqt = daq.MockSawtoothDAQ(serial_port_settings={},
-                               output_queue=daq_queue,
-                               die_event=die_event)
+    if options.test == RANDOM:
+        daqt = daq.MockDAQ(serial_port_settings={},
+                           output_queue=daq_queue,
+                           die_event=die_event)
+    elif options.test == SAWTOOTH:
+        daqt = daq.MockSawtoothDAQ(serial_port_settings={},
+                                   output_queue=daq_queue,
+                                   die_event=die_event)
+    else:
+        raise NotImplementedError('Non-test mode not implemented.')
     daqt.name = 'DAQ-Thread'
     sert = serializer.DBSerializer(output_queue=serial_queue,
                                    die_event=die_event,
@@ -118,7 +128,7 @@ def get_parser():
                    help='Enable verbose output')
     collect = subps.add_parser('collect', help='Collect, graph and store data.')
     collect.set_defaults(func=main)
-    collect.add_argument('--test', dest='test', choices=[None, 'random', 'sawtooth'], default=None, type=str.lower,
+    collect.add_argument('--test', dest='test', choices=[None, RANDOM, SAWTOOTH], default=None, type=str.lower,
                          help='Perform a data capture and serialization test.')
     collect.add_argument('--collection-name', dest='name', default='Collection', action='store', type=str,
                          help='Name of the data collection')
