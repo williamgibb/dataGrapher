@@ -2,7 +2,6 @@ import contextlib
 import json
 import logging
 import os
-import sys
 from sqlalchemy import Column, ForeignKey, Integer, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
@@ -14,11 +13,8 @@ log = logging.getLogger(__name__)
 
 Base = declarative_base()
 
+
 class ModelError(Exception):
-    pass
-
-
-class DBExists(ModelError):
     pass
 
 
@@ -27,6 +23,7 @@ class State(Base):
     _value = Column(String, default="null")
     component = Column(String, primary_key=True)
     key = Column(String, primary_key=True)
+
     def __init__(self, component, key, _value):
         self.component = component
         self.key = key
@@ -49,6 +46,7 @@ class LogSession(Base):
     name = Column(String, default='Collection')
     notes = Column(String, default=None)
     user = Column(String, default=None)
+
     def __init__(self, name, notes=None, user=None):
         self.start = utils.now()
         self.name = name
