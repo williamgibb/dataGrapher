@@ -1,8 +1,13 @@
 import argparse
 import logging
 import multiprocessing
+import os
 import queue
+import sys
 import time
+# Third Party Code
+import pandas
+import tabulate
 # Custom Code
 from . import daq
 from . import grapher
@@ -66,20 +71,69 @@ def main(options):
                 if not t.is_alive():
                     break
                 time.sleep(0.1)
+    sys.exit(0)
+
+
+def dump_sessions(options):
+    if not os.path.isfile(options.db):
+        log.error('DB is not a file. [{}]'.format(options.db))
+        sys.exit(1)
+    with model.session_scope(options.db) as s:
+        r = s.query(model.LogSession).all()
+        r = [model.row2dict(row) for row in r]
+    if not r:
+        log.error('No LogSession rows found.')
+        sys.exit(1)
+    print(tabulate.tabulate(r, headers='keys'))
+    sys.exit(0)
+
+
+def dump_session_data(options):
+    if not os.path.isfile(options.db):
+        log.error('DB is not a file. [{}]'.format(options.db))
+        sys.exit(1)
+    with model.session_scope(options.db) as s:
+        r = s.query(model.LogData).filter_by(session_id=options.id).all()
+        r = [model.row2dict(row) for row in r]
+    if not r:
+        log.error('No rows found for id: {}'.format(options.id))
+        sys.exit(1)
+    fp = options.output
+    if not options.output:
+        with model.session_scope(options.db) as s:
+            ls = s.query(model.LogSession).filter_by(id=options.id).one()
+            fp = '{}_{}_{}.xlsx'.format(ls.name, ls.start, ls.stop)
+    log.info('Writing data to [{}]'.format(fp))
+    df = pandas.DataFrame(r)
+    df.to_excel(fp, index=False)
+    sys.exit(0)
 
 
 def get_parser():
     p = argparse.ArgumentParser(description='Runs the datagrapher application.')
+    subps = p.add_subparsers(help='sub-command help')
     p.add_argument('-d', '--db', dest='db', default='test.db', action='store', type=str,
                    help='Name of the db to store data into')
-    p.add_argument('--collection-name', dest='name', default='Collection', action='store', type=str,
-                   help='Name of the data collection')
-    p.add_argument('--notes', dest='notes', default=None, action='store', type=str,
-                   help='Notes related to the data collection')
-    p.add_argument('--username', dest='user', default=utils.current_user(), action='store', type=str,
-                   help='User performing the data collection')
     p.add_argument('-v', dest='verbose', default=False, action='store_true',
                    help='Enable verbose output')
+    collect = subps.add_parser('collect', help='Collect, graph and store data.')
+    collect.set_defaults(func=main)
+    collect.add_argument('--test', dest='test', choices=[None, 'random', 'sawtooth'], default=None, type=str.lower,
+                         help='Perform a data capture and serialization test.')
+    collect.add_argument('--collection-name', dest='name', default='Collection', action='store', type=str,
+                         help='Name of the data collection')
+    collect.add_argument('--notes', dest='notes', default=None, action='store', type=str,
+                         help='Notes related to the data collection')
+    collect.add_argument('--username', dest='user', default=utils.current_user(), action='store', type=str,
+                         help='User performing the data collection')
+    listd = subps.add_parser('list', help='List session collection data')
+    listd.set_defaults(func=dump_sessions)
+    dumpd = subps.add_parser('dump', help='Dump session collection data')
+    dumpd.set_defaults(func=dump_session_data)
+    dumpd.add_argument('-i', '--id', required=True, type=int,
+                       help='Dump the data from a particular data collection to a xlsx file.')
+    dumpd.add_argument('-o', '--output', default=None, type=str,
+                       help='File to dump the data out too')
     return p
 
 
@@ -88,4 +142,4 @@ if __name__ == '__main__':
                         level=logging.DEBUG, )
     parser = get_parser()
     opts = parser.parse_args()
-    main(opts)
+    opts.func(opts)

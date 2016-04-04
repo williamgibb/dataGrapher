@@ -117,3 +117,17 @@ def session_scope(fp, commit=False, lock=None):
             raise
         finally:
             session.close()
+
+
+def row2dict(row):
+    """
+    http://stackoverflow.com/a/1960546
+
+    :param row:
+    :return:
+    """
+    d = {}
+    for column in row.__table__.columns:
+        d[column.name] = getattr(row, column.name)
+
+    return d
