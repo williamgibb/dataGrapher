@@ -61,3 +61,32 @@ class MockSawtoothDAQ(threading.Thread):
                 increment *= -1.0
                 # In reality we would do non-blocking reads for line oriented data
         log.info('[{}] is exiting'.format(self.name))
+
+
+class ReplayDAQ(threading.Thread):
+    def __init__(self,
+                 output_queue: multiprocessing.Queue,
+                 die_event: multiprocessing.Event,
+                 replay_data: list,
+                 replay_rate: float =1.0,
+                 **kwargs
+                 ):
+        super().__init__()
+        self.queue = output_queue
+        self.die_event = die_event
+        self.replay_data = replay_data
+        self.replay_rate = replay_rate
+
+    def run(self):
+        log.info('{} is running!'.format(self.name))
+        i = 0
+        j = len(self.replay_data)
+        while True:
+            if self.die_event.is_set():
+                break
+            v = self.replay_data[i]
+            log.debug('Emitting {}'.format(v))
+            self.queue.put(v)
+            time.sleep(self.replay_rate)
+            i = (i + 1) % j
+        log.info('[{}] is exiting'.format(self.name))
