@@ -14,6 +14,7 @@ from . import daq
 from . import grapher
 from . import model
 from . import serializer
+from . import serial_settings
 from . import utils
 
 log = logging.getLogger(__name__)
@@ -44,7 +45,17 @@ def main(options):
                                    output_queue=daq_queue,
                                    die_event=die_event)
     else:
-        raise NotImplementedError('Non-test mode not implemented.')
+        # Now we use a real DAQ!
+        port = options.port
+        if not port:
+            log.error('Must specify a port.')
+            sys.exit(1)
+        ps = serial_settings.MT_NCLASSIC_DEFAULT.copy()
+        ps['port'] = options.port
+        daqt = daq.MettlerNBDAQ(serial_port_settings=ps,
+                                output_queue=daq_queue,
+                                die_event=die_event,
+                                stable_only=options.stable_only)
     daqt.name = 'DAQ-Thread'
     sert = serializer.DBSerializer(output_queue=serial_queue,
                                    die_event=die_event,
@@ -74,14 +85,21 @@ def main(options):
                 break
     except KeyboardInterrupt:
         log.info('Caught KeyboardInterrupt')
-    finally:
         die_event.set()
+    except Exception:
+        log.exception('Unhandled exception')
+        die_event.set()
+    finally:
+        log.info('Shutting down UI and threads.')
         grapher.app.quit()
         for t in [daqt, sert]:
             while True:
+                log.info('Checking [{}]'.format(t.name))
                 if not t.is_alive():
+                    log.info('[{}] is not alive.'.format(t.name))
                     break
                 time.sleep(0.1)
+
     sys.exit(0)
 
 
@@ -170,7 +188,7 @@ def replay_session(options):
     sys.exit(0)
 
 
-# noinspection PyUnusedLocal
+# noinspection PyUnusedLocal,PyShadowingNames
 def call_list_ports(opts):
     """
     List all of the available serial ports on the system.
@@ -200,6 +218,10 @@ def get_parser():
                          help='Notes related to the data collection')
     collect.add_argument('--username', dest='user', default=utils.current_user(), action='store', type=str,
                          help='User performing the data collection')
+    collect.add_argument('-p', '--port', dest='port', default=None, action='store', type=str,
+                         help='Serial port to connect to in order to collect data.')
+    collect.add_argument('--stable-only', dest='stable_only', default=False, action='store_true',
+                         help='Only record stable values')
     listd = subps.add_parser('list', help='List session collection data')
     listd.set_defaults(func=dump_sessions)
     listp = subps.add_parser('ports', help='List serial ports available for use')

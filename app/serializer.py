@@ -64,6 +64,7 @@ class DBSerializer(threading.Thread):
 
         while True:
             if self.die_event.is_set():
+                log.info('[{}] Die event set'.format(self.name))
                 break
 
             try:

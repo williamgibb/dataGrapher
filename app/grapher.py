@@ -2,6 +2,7 @@ import logging
 import math
 import multiprocessing
 import queue
+import re
 # Third party code
 import numpy as np
 from vispy import gloo
@@ -97,11 +98,14 @@ class Canvas(app.Canvas):
         self.n = n
         self.nrows = 2
         self.ncols = 1
+        self._float_regex = r'-?[\d]*[\.]?[\d]+'
+        self.float_regex = re.compile(self._float_regex)
         self.m = self.nrows * self.ncols
         self.lock = multiprocessing.Lock()
         self.input_data = np.array([1.0 for i in range(self.n)])
         self.diff_data = np.array([1.0 for i in range(self.n)])
         self.graph_data = np.stack((self.diff_data, self.input_data)).astype(np.float32)
+        # noinspection PyTypeChecker
         self.index = np.c_[np.repeat(np.repeat(np.arange(self.ncols), self.nrows), self.n),
                            np.repeat(np.tile(np.arange(self.nrows), self.ncols), self.n),
                            np.tile(np.arange(self.n), self.m)].astype(np.float32)
@@ -173,6 +177,12 @@ class Canvas(app.Canvas):
         :return:
         """
         k = 1
+        if isinstance(v, str):
+            m = self.float_regex.search(v)
+            if not m:
+                log.error('Cannot find a numeric like value in: {}'.format())
+                raise ValueError('Bad value encountered')
+            v = float(m.group())
         with self.lock:
             self.input_data[:-k] = self.input_data[k:]
             self.input_data[-k:] = v
