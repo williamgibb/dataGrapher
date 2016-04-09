@@ -8,6 +8,7 @@ import time
 # Third Party Code
 import pandas
 import tabulate
+import serial.tools.list_ports as list_ports
 # Custom Code
 from . import daq
 from . import grapher
@@ -169,6 +170,19 @@ def replay_session(options):
     sys.exit(0)
 
 
+# noinspection PyUnusedLocal
+def call_list_ports(opts):
+    """
+    List all of the available serial ports on the system.
+
+    :param opts: Unused.
+    :return:
+    """
+    sys.argv = [sys.argv[0]]
+    list_ports.main()
+    sys.exit(0)
+
+
 def get_parser():
     p = argparse.ArgumentParser(description='Runs the datagrapher application.')
     subps = p.add_subparsers(help='sub-command help')
@@ -188,6 +202,8 @@ def get_parser():
                          help='User performing the data collection')
     listd = subps.add_parser('list', help='List session collection data')
     listd.set_defaults(func=dump_sessions)
+    listp = subps.add_parser('ports', help='List serial ports available for use')
+    listp.set_defaults(func=call_list_ports)
     dumpd = subps.add_parser('dump', help='Dump session collection data')
     dumpd.set_defaults(func=dump_session_data)
     dumpd.add_argument('-i', '--id', required=True, type=int,
