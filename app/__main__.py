@@ -154,7 +154,7 @@ def replay_session(options):
                 vis_queue.put(v)
             grapher.app.process_events()
             if close_event.is_set():
-                log.info('')
+                log.info('UI window closed - ending data collection')
                 break
     except KeyboardInterrupt:
         log.info('Caught KeyboardInterrupt')
