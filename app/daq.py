@@ -130,15 +130,18 @@ class MettlerNBDAQ(threading.Thread):
         # Open up the serial port
         self.serial = serial.Serial(**self.serial_port_settings)
         while True:
-            time.sleep(0.01)
             if self.die_event.is_set():
                 log.info('[{}] Die event set'.format(self.name))
                 break
             line = self.serial.readline()
             if not line:
                 continue
-            s = line.decode().strip()
-            log.debug('Read line: {}'.format(s))
+            try:
+                s = line.decode().strip()
+            except UnicodeDecodeError:
+                log.error('Failed to decode line: {}'.format(line))
+                continue
+            log.debug('Read line: [{}]'.format(s))
             if self.stable_only:
                 # PRINTER MODE
                 # STAB - no indicator of change is included - simply no lines are printed
