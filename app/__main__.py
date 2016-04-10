@@ -210,17 +210,17 @@ def get_parser():
                    help='Enable verbose output')
     collect = subps.add_parser('collect', help='Collect, graph and store data.')
     collect.set_defaults(func=main)
-    collect.add_argument('--test', dest='test', choices=[None, RANDOM, SAWTOOTH], default=None, type=str.lower,
+    collect.add_argument('-t', '--test', dest='test', choices=[None, RANDOM, SAWTOOTH], default=None, type=str.lower,
                          help='Perform a data capture and serialization test.')
-    collect.add_argument('--collection-name', dest='name', default='Collection', action='store', type=str,
+    collect.add_argument('-c', '--collection-name', dest='name', default='Collection', action='store', type=str,
                          help='Name of the data collection')
-    collect.add_argument('--notes', dest='notes', default=None, action='store', type=str,
+    collect.add_argument('-n', '--notes', dest='notes', default=None, action='store', type=str,
                          help='Notes related to the data collection')
-    collect.add_argument('--username', dest='user', default=utils.current_user(), action='store', type=str,
+    collect.add_argument('-u', '--username', dest='user', default=utils.current_user(), action='store', type=str,
                          help='User performing the data collection')
     collect.add_argument('-p', '--port', dest='port', default=None, action='store', type=str,
                          help='Serial port to connect to in order to collect data.')
-    collect.add_argument('--stable-only', dest='stable_only', default=False, action='store_true',
+    collect.add_argument('-s', '--stable-only', dest='stable_only', default=False, action='store_true',
                          help='Only record stable values')
     listd = subps.add_parser('list', help='List session collection data')
     listd.set_defaults(func=dump_sessions)
