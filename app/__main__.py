@@ -85,12 +85,12 @@ def main(options):
                 break
     except KeyboardInterrupt:
         log.info('Caught KeyboardInterrupt')
-        die_event.set()
     except Exception:
         log.exception('Unhandled exception')
-        die_event.set()
     finally:
         log.info('Shutting down UI and threads.')
+        if not die_event.is_set():
+            die_event.set()
         grapher.app.quit()
         for t in [daqt, sert]:
             while True:
