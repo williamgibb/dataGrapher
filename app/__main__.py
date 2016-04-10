@@ -249,7 +249,8 @@ def get_parser():
 
 
 if __name__ == '__main__':
-    logging.basicConfig(format='%(asctime)s:%(levelname)s: %(message)s [%(module)s.%(funcName)s]', datefmt='%m/%d/%Y %I:%M:%S %p',
+    logging.basicConfig(format='%(asctime)s:%(levelname)s: %(message)s [%(module)s.%(funcName)s]',
+                        datefmt='%m/%d/%Y %I:%M:%S %p',
                         level=logging.DEBUG, )
     parser = get_parser()
     opts = parser.parse_args()

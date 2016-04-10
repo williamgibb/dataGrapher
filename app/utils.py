@@ -2,10 +2,12 @@ import datetime
 import os
 
 try:
-  import pwd
+    import pwd
 except ImportError:
-  import getpass
-  pwd = None
+    import getpass
+
+    pwd = None
+
 
 def now():
     """

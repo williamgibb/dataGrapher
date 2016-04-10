@@ -4,9 +4,6 @@ Default serial port configuration settings for devices
 These dictionaries are designed to be dropped into the pyserial serial.Serial()
 object init via a **kwargs style object creation.
 """
-"""
-baudrate=9600, bytesize=EIGHTBITS, parity=PARITY_NONE, stopbits=STOPBITS_ONE, timeout=None, xonxoff=False, rtscts=False, write_timeout=None
-"""
 import serial
 
 # Mettler-Toledo NewClassic Balances

@@ -72,7 +72,6 @@ class ReplayDAQ(threading.Thread):
                  die_event: multiprocessing.Event,
                  replay_data: list,
                  replay_rate: float =1.0,
-                 **kwargs
                  ):
         super().__init__()
         self.queue = output_queue
