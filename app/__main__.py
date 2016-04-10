@@ -67,8 +67,11 @@ def main(options):
     c = grapher.Canvas(output_queue=vis_queue,
                        n=100,
                        close_event=close_event)
-    daqt.start()
-    sert.start()
+    threads = [daqt, sert]
+    for thread in threads:
+        thread.start()
+
+    # noinspection PyBroadException
     try:
         grapher.app.create()
         while True:
@@ -83,20 +86,23 @@ def main(options):
             grapher.app.process_events()
             if close_event.is_set():
                 break
+            for thread in threads:
+                if not thread.is_alive():
+                    log.error('Thread [{}] was found dead! Exiting main loop.'.format(thread.name))
     except KeyboardInterrupt:
         log.info('Caught KeyboardInterrupt')
-    except Exception:
+    except:
         log.exception('Unhandled exception')
     finally:
         log.info('Shutting down UI and threads.')
         if not die_event.is_set():
             die_event.set()
         grapher.app.quit()
-        for t in [daqt, sert]:
+        for thread in threads:
             while True:
-                log.info('Checking [{}]'.format(t.name))
-                if not t.is_alive():
-                    log.info('[{}] is not alive.'.format(t.name))
+                log.debug('Checking [{}]'.format(thread.name))
+                if not thread.is_alive():
+                    log.debug('[{}] is not alive.'.format(thread.name))
                     break
                 time.sleep(0.1)
 
