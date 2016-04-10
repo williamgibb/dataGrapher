@@ -183,6 +183,8 @@ def replay_session(options):
                 break
     except KeyboardInterrupt:
         log.info('Caught KeyboardInterrupt')
+    except:
+        log.exception('Unhandled exception')
     finally:
         die_event.set()
         grapher.app.quit()
