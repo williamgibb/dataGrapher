@@ -158,13 +158,14 @@ def replay_session(options):
                          die_event=die_event,
                          replay_data=r,
                          replay_rate=options.replay_rate)
-
+    daqt.name = 'Replay-Thread'
     # noinspection PyUnusedLocal
     c = grapher.Canvas(output_queue=vis_queue,
                        n=100,
                        close_event=close_event)
     daqt.start()
 
+    # noinspection PyBroadException
     try:
         grapher.app.create()
         while True:

@@ -103,9 +103,13 @@ class Canvas(app.Canvas):
         self.m = self.nrows * self.ncols
         self.lock = multiprocessing.Lock()
         # noinspection PyUnusedLocal
-        self.input_data = np.array([1.0 for i in range(self.n)])
+        self.input_data = np.array([0 for i in range(self.n)])
         # noinspection PyUnusedLocal
-        self.diff_data = np.array([1.0 for i in range(self.n)])
+        self.diff_data = np.array([0 for i in range(self.n)])
+        # noinspection PyUnusedLocal
+        self.scaled_input_data = np.array([0 for i in range(self.n)])
+        # noinspection PyUnusedLocal
+        self.scaled_diff_data = np.array([0 for i in range(self.n)])
         self.graph_data = np.stack((self.diff_data, self.input_data)).astype(np.float32)
         # noinspection PyTypeChecker
         self.index = np.c_[np.repeat(np.repeat(np.arange(self.ncols), self.nrows), self.n),
@@ -191,4 +195,8 @@ class Canvas(app.Canvas):
             self.diff_data = np.diff(self.input_data)
             # lol its like leftpad
             self.diff_data = np.insert(self.diff_data, 0, self.diff_data[0])
-            self.graph_data = np.stack((self.diff_data, self.input_data)).astype(np.float32)
+            # Now normalize the data
+            # http://stackoverflow.com/questions/1735025/how-to-normalize-a-numpy-array-to-within-a-certain-range
+            self.scaled_diff_data = self.diff_data/np.max(np.abs(self.diff_data))
+            self.scaled_input_data = self.input_data/np.max(np.abs(self.input_data))
+            self.graph_data = np.stack((self.scaled_diff_data, self.scaled_input_data)).astype(np.float32)
