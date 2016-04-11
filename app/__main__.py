@@ -24,8 +24,6 @@ SAWTOOTH = 'sawtooth'
 
 
 def main(options):
-    if not options.verbose:
-        logging.disable(logging.DEBUG)
     die_event = multiprocessing.Event()
     close_event = multiprocessing.Event()
     daq_queue = multiprocessing.Queue()
@@ -256,4 +254,6 @@ if __name__ == '__main__':
                         level=logging.DEBUG, )
     parser = get_parser()
     opts = parser.parse_args()
+    if not opts.verbose:
+        logging.disable(logging.DEBUG)
     opts.func(opts)
