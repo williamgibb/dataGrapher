@@ -117,7 +117,9 @@ def dump_sessions(options):
     if not r:
         log.error('No LogSession rows found.')
         sys.exit(1)
-    print(tabulate.tabulate(r, headers='keys'))
+    ba = utils.BetterAsciiTable('')
+    ba.add_rows(r, wrap_keys={'notes': {'width': 37}})
+    print(ba.table)
     sys.exit(0)
 
 

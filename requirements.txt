@@ -4,7 +4,7 @@ pandas==0.18.0
 pyglet==1.2.4
 pyserial==3.0.1
 SQLAlchemy==1.0.12
-tabulate==0.7.5
+terminaltables==2.1.0
 # This rougly corresponds to vispy 0.5.0.dev0.
 # It is for the plotting capability of vispy.
 git+git://github.com/vispy/vispy.git@053b6f40da9246db6e1746a07bc0141a3756eb14
