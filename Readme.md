@@ -115,7 +115,7 @@ $ python -m app replay -r 0.1 -i 1
 
 TODO
 ====
-Support customer arguments for the serial connections.
-Migrate to using vispy's plot interface instead of using a hacked up set of example code.
-Add a proper UI.
+1. Support customer arguments for the serial connections.
+1. Migrate to using vispy's plot interface instead of using a hacked up set of example code.
+1. Add a proper UI.
 
