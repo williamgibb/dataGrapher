@@ -7,7 +7,6 @@ import sys
 import time
 # Third Party Code
 import pandas
-import tabulate
 import serial.tools.list_ports as list_ports
 # Custom Code
 from . import daq

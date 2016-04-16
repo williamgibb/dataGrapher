@@ -150,6 +150,7 @@ class Canvas(app.Canvas):
         self.program['u_scale'] = (max(1, scale_x_new), max(1, scale_y_new))
         self.update()
 
+    # noinspection PyUnusedLocal
     def on_timer(self, event):
         """
         Grab data from the queue and put them onto the end of the numpy arrays.
@@ -166,10 +167,12 @@ class Canvas(app.Canvas):
                 self.program['a_position'].set_data(self.graph_data.ravel().astype(np.float32))
         self.update()
 
+    # noinspection PyUnusedLocal
     def on_draw(self, event):
         gloo.clear()
         self.program.draw('line_strip')
 
+    # noinspection PyUnusedLocal
     def on_close(self, event):
         log.debug('Close event found.')
         self.close_event.set()
@@ -197,6 +200,6 @@ class Canvas(app.Canvas):
             self.diff_data = np.insert(self.diff_data, 0, self.diff_data[0])
             # Now normalize the data
             # http://stackoverflow.com/questions/1735025/how-to-normalize-a-numpy-array-to-within-a-certain-range
-            self.scaled_diff_data = self.diff_data/np.max(np.abs(self.diff_data))
-            self.scaled_input_data = self.input_data/np.max(np.abs(self.input_data))
+            self.scaled_diff_data = self.diff_data / np.max(np.abs(self.diff_data))
+            self.scaled_input_data = self.input_data / np.max(np.abs(self.input_data))
             self.graph_data = np.stack((self.scaled_diff_data, self.scaled_input_data)).astype(np.float32)

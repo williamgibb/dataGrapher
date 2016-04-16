@@ -11,6 +11,7 @@ except ImportError:
 
     pwd = None
 
+
 class BetterAsciiTable(terminaltables.AsciiTable):
     def __init__(self, *args, **kwargs):
         terminaltables.AsciiTable.__init__(self, *args, **kwargs)
