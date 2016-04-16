@@ -102,14 +102,10 @@ class Canvas(app.Canvas):
         self.float_regex = re.compile(self._float_regex)
         self.m = self.nrows * self.ncols
         self.lock = multiprocessing.Lock()
-        # noinspection PyUnusedLocal
-        self.input_data = np.array([0 for i in range(self.n)])
-        # noinspection PyUnusedLocal
-        self.diff_data = np.array([0 for i in range(self.n)])
-        # noinspection PyUnusedLocal
-        self.scaled_input_data = np.array([0 for i in range(self.n)])
-        # noinspection PyUnusedLocal
-        self.scaled_diff_data = np.array([0 for i in range(self.n)])
+        self.input_data = np.zeros(shape=self.n)
+        self.diff_data = np.zeros(shape=self.n)
+        self.scaled_input_data = np.zeros(shape=self.n)
+        self.scaled_diff_data = np.zeros(shape=self.n)
         self.graph_data = np.stack((self.diff_data, self.input_data)).astype(np.float32)
         # noinspection PyTypeChecker
         self.index = np.c_[np.repeat(np.repeat(np.arange(self.ncols), self.nrows), self.n),
