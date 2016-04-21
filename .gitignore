@@ -64,3 +64,4 @@ target/
 .python-version
 *.xlsx
 playground/
+*.db
