@@ -167,7 +167,7 @@ class MettlerNBDAQ(threading.Thread):
         :param s:
         :return:
         """
-        m = constants.emission_regex.search(s)
+        m = constants.EMISSION_REGEX.search(s)
         if not m:
             log.warning('Unable to find emission match for: [{}]'.format(s))
             return

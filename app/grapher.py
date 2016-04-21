@@ -183,7 +183,7 @@ class Canvas(app.Canvas):
         """
         k = 1
         if isinstance(v, str):
-            m = constants.float_regex.search(v)
+            m = constants.FLOAT_REGEX.search(v)
             if not m:
                 log.error('Cannot find a numeric like value in: {}'.format())
                 raise ValueError('Bad value encountered')
