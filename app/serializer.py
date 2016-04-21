@@ -4,6 +4,7 @@ import multiprocessing
 import queue
 
 from .model import session_scope, make_db, LogSession, LogData
+from . import constants
 from . import utils
 
 log = logging.getLogger(__name__)
@@ -47,8 +48,20 @@ class DBSerializer(threading.Thread):
 
             log.debug('{} got: {}'.format(self.name, v))
 
+            unit = constants.UNKNOWN_UNIT
+            if isinstance(v, str):
+                m = constants.EMISSION_REGEX.search(v)
+                if not m:
+                    pass # XXX ????
+                d = m.groupdict()
+                unit = d.get('unit')
+                v = d.get('value')
+            elif isinstance(v, str):
+                v = float(v)
+
             with session_scope(self.db, commit=True, lock=self.lock) as s:
                 ld = LogData(data=v,
+                             unit=unit,
                              timestamp=utils.now(),
                              session_id=self.session_id)
                 s.add(ld)

@@ -2,7 +2,7 @@ import contextlib
 import json
 import logging
 import os
-from sqlalchemy import Column, ForeignKey, Integer, String, DateTime
+from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Float
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy import create_engine
@@ -57,7 +57,8 @@ class LogSession(Base):
 class LogData(Base):
     __tablename__ = 'logdata'
     id = Column(Integer, primary_key=True, autoincrement=True)
-    data = Column(String)
+    data = Column(Float)
+    unit = Column(String, default=None)
     timestamp = Column(DateTime, default=None)
     session_id = Column(Integer, ForeignKey('logsession.id'), index=True)
     session = relationship(LogSession)
