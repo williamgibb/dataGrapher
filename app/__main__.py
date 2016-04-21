@@ -256,6 +256,9 @@ if __name__ == '__main__':
                         level=logging.DEBUG, )
     parser = get_parser()
     opts = parser.parse_args()
+    if 'func' not in opts:
+        parser.print_help()
+        sys.exit(1)
     if not opts.verbose:
         logging.disable(logging.DEBUG)
     opts.func(opts)
