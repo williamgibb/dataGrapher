@@ -7,6 +7,8 @@ import time
 
 import serial
 
+from . import constants
+
 log = logging.getLogger(__name__)
 
 
@@ -119,10 +121,7 @@ class MettlerNBDAQ(threading.Thread):
         self.die_event = die_event
         self.stable_only = stable_only
         self.serial = serial.Serial()
-        # This regex is designed to capture (possibly negative) integer/float
-        # values followed by a string value which represents a unit type.
-        self._emission_regex = r'-?[\d]*[\.]?[\d]+\s?[a-z]{1,4}$'
-        self.emit_regex = re.compile(self._emission_regex, re.IGNORECASE)
+
 
     def run(self):
         log.info('{} is running!'.format(self.name))
@@ -168,7 +167,7 @@ class MettlerNBDAQ(threading.Thread):
         :param s:
         :return:
         """
-        m = self.emit_regex.search(s)
+        m = constants.emission_regex.search(s)
         if not m:
             log.warning('Unable to find emission match for: [{}]'.format(s))
             return

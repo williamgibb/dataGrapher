@@ -8,6 +8,8 @@ import numpy as np
 from vispy import gloo
 from vispy import app
 
+from . import constants
+
 log = logging.getLogger(__name__)
 
 # Shaders lifted
@@ -98,8 +100,6 @@ class Canvas(app.Canvas):
         self.n = n
         self.nrows = 2
         self.ncols = 1
-        self._float_regex = r'-?[\d]*[\.]?[\d]+'
-        self.float_regex = re.compile(self._float_regex)
         self.m = self.nrows * self.ncols
         self.lock = multiprocessing.Lock()
         self.input_data = np.zeros(shape=self.n)
@@ -183,7 +183,7 @@ class Canvas(app.Canvas):
         """
         k = 1
         if isinstance(v, str):
-            m = self.float_regex.search(v)
+            m = constants.float_regex.search(v)
             if not m:
                 log.error('Cannot find a numeric like value in: {}'.format())
                 raise ValueError('Bad value encountered')
