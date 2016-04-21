@@ -18,6 +18,7 @@ class DBSerializer(threading.Thread):
                  serial_lock: multiprocessing.Lock,
                  db_fp: str,
                  logsession: LogSession,
+                 print_diff: bool =True,
                  **kwargs):
         super().__init__()
         self.queue = output_queue
@@ -26,6 +27,8 @@ class DBSerializer(threading.Thread):
         self.db = db_fp
         self.ls = logsession
         self.session_id = None
+        self.previous_value = 0.0
+        self.print_diff = print_diff
         make_db(self.db)
 
     def run(self):
@@ -59,9 +62,15 @@ class DBSerializer(threading.Thread):
             elif isinstance(v, str):
                 v = float(v)
 
+            difference = v - self.previous_value
+            self.previous_value = v
+            if self.print_diff:
+                log.info('Diff: {}'.format(difference))
+
             with session_scope(self.db, commit=True, lock=self.lock) as s:
                 ld = LogData(data=v,
                              unit=unit,
+                             difference=difference,
                              timestamp=utils.now(),
                              session_id=self.session_id)
                 s.add(ld)

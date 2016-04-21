@@ -58,6 +58,7 @@ class LogData(Base):
     __tablename__ = 'logdata'
     id = Column(Integer, primary_key=True, autoincrement=True)
     data = Column(Float)
+    difference = Column(Float, default=0.0)
     unit = Column(String, default=None)
     timestamp = Column(DateTime, default=None)
     session_id = Column(Integer, ForeignKey('logsession.id'), index=True)

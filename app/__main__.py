@@ -58,7 +58,8 @@ def main(options):
                                    die_event=die_event,
                                    serial_lock=serial_lock,
                                    db_fp=options.db,
-                                   logsession=ls)
+                                   logsession=ls,
+                                   print_diff=options.print_diff)
     sert.name = 'SERT-Thread'
     # noinspection PyUnusedLocal
     c = grapher.Canvas(output_queue=vis_queue,
@@ -228,6 +229,8 @@ def get_parser():
                          help='User performing the data collection')
     collect.add_argument('-p', '--port', dest='port', default=None, action='store', type=str,
                          help='Serial port to connect to in order to collect data.')
+    collect.add_argument('--no-print-diff', dest='print_diff', default=True, action='store_false',
+                         help='Do not print the difference value written to the database.')
     collect.add_argument('-s', '--stable-only', dest='stable_only', default=False, action='store_true',
                          help='Only record stable values')
     listd = subps.add_parser('list', help='List session collection data')
