@@ -65,6 +65,8 @@ The collect command is used to actually collect data from a balance, or to run t
       -u USER, --username USER
                             User performing the data collection
       -p PORT, --port PORT  Serial port to connect to in order to collect data.
+      --no-print-diff       Do not print the difference value written to the
+                            database.
       -s, --stable-only     Only record stable values
 ```
 
@@ -74,6 +76,7 @@ The notes option allows you to specify notes for a given data collection.
 The user option allows you to specify the researcher performing the data collection.
 The port option allows you to specify which serial port to connect to.  This should be a serial port that can be used 
 by pyserial.  
+By default, the instaneous change in values are logged.  You can suppress this with the '--no-print-diff' option.
 The stable option allows you to specify if you only want data values recorded that are stable reading from the balance.
 
 
