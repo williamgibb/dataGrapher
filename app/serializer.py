@@ -18,7 +18,7 @@ class DBSerializer(threading.Thread):
                  serial_lock: multiprocessing.Lock,
                  db_fp: str,
                  logsession: LogSession,
-                 print_diff: bool =True
+                 print_diff: bool =True,
                  **kwargs):
         super().__init__()
         self.queue = output_queue
